@@ -46,3 +46,8 @@ body.drawer-open{overflow:hidden}
 
 /* Dashboard spacing fix */
 .two-column-panels{margin-top:24px}
+
+
+/* Clean buttons: no icons */
+.btn > svg,
+.btn > i{display:none!important}
