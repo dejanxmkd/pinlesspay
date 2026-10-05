@@ -86,3 +86,15 @@ select.input{
 .table tbody tr[data-view-href]{cursor:pointer}
 .table tbody tr[data-view-href]:hover td{background:#fafbfd}
 .table tbody tr[data-view-href] td.actions{cursor:default}
+
+
+/* Fix table row borders through action column */
+.table td.actions{
+  display:table-cell;
+  text-align:right;
+  vertical-align:middle;
+  height:46px;
+}
+.table td.actions .action-menu{
+  vertical-align:middle;
+}
