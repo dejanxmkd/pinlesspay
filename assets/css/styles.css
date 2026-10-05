@@ -217,7 +217,7 @@ select.input{
   object-fit:cover;
   object-position:center;
   background:#fff;
-  border:1px solid rgba(255,255,255,.10);
+  border:0;
 }
 
 
@@ -225,4 +225,49 @@ select.input{
 html,
 body{
   font-size:15px;
+}
+
+
+/* UI typography hierarchy */
+html,
+body{
+  font-size:15px;
+}
+
+/* Primary content / data */
+.table td,
+.input,
+.search input,
+.filter-select,
+.select-like,
+.detail strong{
+  font-size:15px;
+}
+
+/* Table headers and form labels stay smaller to preserve hierarchy */
+.table th,
+.field label,
+.detail label{
+  font-size:12px;
+  font-weight:600;
+}
+
+/* Section-level form headings */
+.form-section h3,
+.drawer-section h3{
+  font-size:16px;
+}
+
+/* Supporting copy */
+.filter-meta,
+.breadcrumb,
+.drawer-header p,
+.hint-error,
+.required-error{
+  font-size:12px;
+}
+
+/* Buttons remain slightly subordinate to page/data content */
+.btn{
+  font-size:14px;
 }
