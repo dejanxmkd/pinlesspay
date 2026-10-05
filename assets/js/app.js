@@ -7,6 +7,46 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const refreshIcons = () => { if (window.lucide) lucide.createIcons(); };
 
+  // ---------- Row action overflow menus ----------
+  document.querySelectorAll('td.actions').forEach(cell => {
+    const actions = Array.from(cell.children).filter(el =>
+      el.matches('a,button') && !el.classList.contains('action-menu-trigger')
+    );
+
+    if (actions.length > 2) {
+      const menu = document.createElement('div');
+      menu.className = 'action-menu';
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'action-menu-trigger';
+      trigger.setAttribute('aria-label', 'More actions');
+      trigger.innerHTML = '<i data-lucide="ellipsis"></i>';
+
+      const panel = document.createElement('div');
+      panel.className = 'action-menu-panel';
+
+      actions.forEach(action => panel.appendChild(action));
+      menu.appendChild(trigger);
+      menu.appendChild(panel);
+      cell.appendChild(menu);
+
+      trigger.addEventListener('click', e => {
+        e.stopPropagation();
+        document.querySelectorAll('.action-menu.open').forEach(other => {
+          if (other !== menu) other.classList.remove('open');
+        });
+        menu.classList.toggle('open');
+      });
+    }
+  });
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.action-menu.open').forEach(menu => menu.classList.remove('open'));
+  });
+
+  refreshIcons();
+
   // ---------- Generic client-side table filtering ----------
   document.querySelectorAll('[data-filter-table]').forEach(table => {
     const key = table.dataset.filterTable;
