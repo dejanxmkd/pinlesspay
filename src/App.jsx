@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
+import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   BadgeCheck,
   BadgeDollarSign,
@@ -181,12 +181,12 @@ function Kpi({ label, value, icon: Icon }) {
   );
 }
 
-function FilterSelect({ value, onValueChange, placeholder, options, className }) {
+function FilterSelect({ value, onValueChange, placeholder, options, className, includeAll = true }) {
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger className={className}><SelectValue placeholder={placeholder} /></SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">{placeholder}</SelectItem>
+        {includeAll && <SelectItem value="all">{placeholder}</SelectItem>}
         {options.map(option => <SelectItem value={option} key={option}>{option}</SelectItem>)}
       </SelectContent>
     </Select>
@@ -235,22 +235,22 @@ function MerchantSheet({ open, onOpenChange, merchant, onSave }) {
               <h3>Merchant Information</h3>
               <div className="drawer-grid">
                 <Field label="Merchant DBA *" error="Merchant DBA is required." className="span-2">
-                  <Input value={form.dba} onChange={e => set("dba", e.target.value)} placeholder="Enter merchant DBA" />
+                  <Input required value={form.dba} onChange={e => set("dba", e.target.value)} placeholder="Enter merchant DBA" />
                 </Field>
                 <Field label="Address *" error="Address is required." className="span-2">
-                  <Input value={form.address} onChange={e => set("address", e.target.value)} placeholder="Enter business address" />
+                  <Input required value={form.address} onChange={e => set("address", e.target.value)} placeholder="Enter business address" />
                 </Field>
                 <Field label="Processor *">
-                  <FilterSelect value={form.processor || "Fiserv"} onValueChange={v => set("processor", v)} placeholder="Select processor" options={["Fiserv","TSYS","Worldpay"]} className="input sh-form-select" />
+                  <FilterSelect value={form.processor || "Fiserv"} onValueChange={v => set("processor", v)} placeholder="Select processor" options={["Fiserv","TSYS","Worldpay"]} className="input sh-form-select" includeAll={false} />
                 </Field>
                 <Field label="MCC Code *" error="MCC is required.">
-                  <Input value={form.mcc} onChange={e => set("mcc", e.target.value)} placeholder="2741" />
+                  <Input required value={form.mcc} onChange={e => set("mcc", e.target.value)} placeholder="2741" />
                 </Field>
                 <Field label="DBA Phone *" error="Phone is required.">
-                  <Input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="(000) 000-0000" />
+                  <Input required value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="(000) 000-0000" />
                 </Field>
                 <Field label="Status">
-                  <FilterSelect value={form.status || "Active"} onValueChange={v => set("status", v)} placeholder="Status" options={["Active","Inactive"]} className="input sh-form-select" />
+                  <FilterSelect value={form.status || "Active"} onValueChange={v => set("status", v)} placeholder="Status" options={["Active","Inactive"]} className="input sh-form-select" includeAll={false} />
                 </Field>
               </div>
             </section>
@@ -258,10 +258,10 @@ function MerchantSheet({ open, onOpenChange, merchant, onSave }) {
               <h3>Business Owner</h3>
               <div className="drawer-grid">
                 <Field label="Business Owner *" error="Owner is required." className="span-2">
-                  <Input value={form.owner} onChange={e => set("owner", e.target.value)} placeholder="Full name" />
+                  <Input required value={form.owner} onChange={e => set("owner", e.target.value)} placeholder="Full name" />
                 </Field>
                 <Field label="Cell Phone *" error="Cell phone is required." className="span-2">
-                  <Input value={form.cell} onChange={e => set("cell", e.target.value)} placeholder="(000) 000-0000" />
+                  <Input required value={form.cell} onChange={e => set("cell", e.target.value)} placeholder="(000) 000-0000" />
                 </Field>
               </div>
             </section>
@@ -304,6 +304,7 @@ function MerchantActions({ merchant, onEdit }) {
 
 function Merchants() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [rows, setRows] = useState(initialMerchants);
   const [search, setSearch] = useState("");
   const [processor, setProcessor] = useState("all");
@@ -320,6 +321,23 @@ function Merchants() {
 
   const openAdd = () => { setEditing(null); setSheetOpen(true); };
   const openEdit = row => { setEditing(row); setSheetOpen(true); };
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("drawer") === "add") {
+      setEditing(null);
+      setSheetOpen(true);
+      return;
+    }
+    const edit = params.get("edit");
+    if (edit) {
+      const target = initialMerchants.find(row => row.dba.toLowerCase().replace(/\s+/g, "-") === edit);
+      if (target) {
+        setEditing(target);
+        setSheetOpen(true);
+      }
+    }
+  }, []);
 
   const save = form => {
     if (editing) {
