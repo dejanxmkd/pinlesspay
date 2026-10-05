@@ -215,7 +215,7 @@ window.addEventListener('DOMContentLoaded', () => {
       <td class="actions">
         <div class="action-menu">
           <button class="action-menu-trigger" type="button" aria-label="More actions"><i data-lucide="ellipsis"></i></button>
-          <div class="action-menu-panel"><button type="button" data-edit-merchant>Edit Merchant</button></div>
+          <div class="action-menu-panel"><a href="merchant-details.html">View Merchant</a><button type="button" data-edit-merchant>Edit Merchant</button></div>
         </div>
       </td>`;
     merchantTable.querySelector('tbody').prepend(tr);
