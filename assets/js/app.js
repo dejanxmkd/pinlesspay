@@ -7,6 +7,31 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const refreshIcons = () => { if (window.lucide) lucide.createIcons(); };
 
+  // ---------- Sidebar profile dropdown ----------
+  document.querySelectorAll('.logout').forEach(logout => {
+    const menu = document.createElement('div');
+    menu.className = 'profile-menu';
+    menu.innerHTML = `
+      <button class="profile-menu-trigger" type="button" aria-label="Open account menu" aria-expanded="false">
+        <i data-lucide="chevrons-up-down"></i>
+      </button>
+      <div class="profile-menu-panel" role="menu">
+        <a href="login.html" role="menuitem"><i data-lucide="log-out"></i><span>Log out</span></a>
+      </div>
+    `;
+    logout.replaceWith(menu);
+  });
+
+  document.querySelectorAll('.profile-menu-trigger').forEach(trigger => {
+    trigger.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const menu = trigger.closest('.profile-menu');
+      const open = menu.classList.toggle('open');
+      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+
   // ---------- Row action overflow menus ----------
   document.querySelectorAll('td.actions').forEach(cell => {
     if (cell.querySelector('.action-menu')) return;
@@ -34,6 +59,19 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  const decorateActionMenu = scope => {
+    scope.querySelectorAll('.action-menu-panel a, .action-menu-panel button').forEach(item => {
+      if (item.dataset.iconReady) return;
+      const label = item.textContent.trim().toLowerCase();
+      const icon = label.startsWith('view') ? 'eye' : label.startsWith('edit') ? 'pencil' : null;
+      if (!icon) return;
+      item.insertAdjacentHTML('afterbegin', '<i data-lucide="' + icon + '"></i>');
+      item.dataset.iconReady = '1';
+    });
+  };
+
+  decorateActionMenu(document);
+
   document.querySelectorAll('.action-menu-trigger').forEach(trigger => {
     trigger.addEventListener('click', e => {
       e.preventDefault();
@@ -52,6 +90,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('click', () => {
     document.querySelectorAll('.action-menu.open').forEach(menu => menu.classList.remove('open'));
+    document.querySelectorAll('.profile-menu.open').forEach(menu => {
+      menu.classList.remove('open');
+      menu.querySelector('.profile-menu-trigger')?.setAttribute('aria-expanded','false');
+    });
   });
 
   refreshIcons();
@@ -236,6 +278,7 @@ window.addEventListener('DOMContentLoaded', () => {
       menu?.classList.toggle('open');
     });
     tr.querySelector('.action-menu-panel')?.addEventListener('click', e => e.stopPropagation());
+    decorateActionMenu(tr);
     refreshIcons();
     return tr;
   };
