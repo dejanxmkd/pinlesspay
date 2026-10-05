@@ -1,1 +1,9 @@
-{"cleanUrls":false,"trailingSlash":false}
+{
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
