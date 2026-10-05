@@ -598,6 +598,8 @@ export default function App() {
       <Route path="/applications.html" element={<Navigate to="/applications" replace />} />
       <Route path="/application-details.html" element={<Navigate to="/application-details" replace />} />
       <Route path="/residuals.html" element={<Navigate to="/residuals" replace />} />
+      <Route path="/add-merchant.html" element={<Navigate to="/merchants?drawer=add" replace />} />
+      <Route path="/edit-merchant.html" element={<Navigate to="/merchants?edit=true-print-shop" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
