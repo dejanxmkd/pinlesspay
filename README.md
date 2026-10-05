@@ -1,0 +1,1 @@
+# Pinless Pay Agent Prototype\n\nStatic HTML/CSS/JS prototype for the Agent Portal.\n\n## Run locally\n\n```bash\nnpm run dev\n```\n\nOpen `http://localhost:3000`.\n\n## Structure\n\n- `assets/css/styles.css` — shared UI styles\n- `assets/js/app.js` — shared prototype interactions\n- `assets/img/` — logo assets\n- 10 standalone HTML prototype pages in the repository root\n
