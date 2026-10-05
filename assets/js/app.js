@@ -9,6 +9,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // ---------- Row action overflow menus ----------
   document.querySelectorAll('td.actions').forEach(cell => {
+    if (cell.querySelector('.action-menu')) return;
     const actions = Array.from(cell.children).filter(el =>
       el.matches('a,button') && !el.classList.contains('action-menu-trigger')
     );
@@ -30,15 +31,23 @@ window.addEventListener('DOMContentLoaded', () => {
       menu.appendChild(trigger);
       menu.appendChild(panel);
       cell.appendChild(menu);
-
-      trigger.addEventListener('click', e => {
-        e.stopPropagation();
-        document.querySelectorAll('.action-menu.open').forEach(other => {
-          if (other !== menu) other.classList.remove('open');
-        });
-        menu.classList.toggle('open');
-      });
     }
+  });
+
+  document.querySelectorAll('.action-menu-trigger').forEach(trigger => {
+    trigger.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const menu = trigger.closest('.action-menu');
+      document.querySelectorAll('.action-menu.open').forEach(other => {
+        if (other !== menu) other.classList.remove('open');
+      });
+      menu?.classList.toggle('open');
+    });
+  });
+
+  document.querySelectorAll('.action-menu-panel').forEach(panel => {
+    panel.addEventListener('click', e => e.stopPropagation());
   });
 
   document.addEventListener('click', () => {
@@ -46,6 +55,14 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   refreshIcons();
+
+  // ---------- Clickable table rows open view mode ----------
+  document.querySelectorAll('tr[data-view-href]').forEach(row => {
+    row.addEventListener('click', e => {
+      if (e.target.closest('button,a,input,select,label,.action-menu')) return;
+      window.location.href = row.dataset.viewHref;
+    });
+  });
 
   // ---------- Generic client-side table filtering ----------
   document.querySelectorAll('[data-filter-table]').forEach(table => {
@@ -162,7 +179,9 @@ window.addEventListener('DOMContentLoaded', () => {
     scope.querySelectorAll('[data-edit-merchant]').forEach(btn => {
       if (btn.dataset.bound) return;
       btn.dataset.bound = '1';
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
         editingRow = btn.closest('tr');
         setDrawerMode('edit', rowData(editingRow));
         openDrawer('merchant-drawer');
@@ -183,6 +202,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const buildMerchantRow = data => {
     const tr = document.createElement('tr');
     tr.dataset.row = '1';
+    tr.dataset.viewHref = 'merchant-details.html';
     tr.innerHTML = `
       <td><strong data-col="dba"></strong></td>
       <td data-col="address"></td>
@@ -193,12 +213,29 @@ window.addEventListener('DOMContentLoaded', () => {
       <td data-col="created">Today</td>
       <td><span class="badge" data-col="status"></span></td>
       <td class="actions">
-        <a class="icon-action" href="merchant-details.html" title="View merchant"><i data-lucide="eye"></i></a>
-        <button class="icon-action" type="button" data-edit-merchant title="Edit merchant"><i data-lucide="pencil"></i></button>
+        <div class="action-menu">
+          <button class="action-menu-trigger" type="button" aria-label="More actions"><i data-lucide="ellipsis"></i></button>
+          <div class="action-menu-panel"><button type="button" data-edit-merchant>Edit Merchant</button></div>
+        </div>
       </td>`;
     merchantTable.querySelector('tbody').prepend(tr);
     updateMerchantRow(tr, data);
     wireMerchantEditButtons(tr);
+    tr.addEventListener('click', e => {
+      if (e.target.closest('button,a,input,select,label,.action-menu')) return;
+      window.location.href = tr.dataset.viewHref;
+    });
+    const trigger = tr.querySelector('.action-menu-trigger');
+    trigger?.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const menu = trigger.closest('.action-menu');
+      document.querySelectorAll('.action-menu.open').forEach(other => {
+        if (other !== menu) other.classList.remove('open');
+      });
+      menu?.classList.toggle('open');
+    });
+    tr.querySelector('.action-menu-panel')?.addEventListener('click', e => e.stopPropagation());
     refreshIcons();
     return tr;
   };
