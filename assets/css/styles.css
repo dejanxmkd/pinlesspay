@@ -209,3 +209,13 @@ select.input{
 .two-column-panels .mini-table th{
   background:#fff;
 }
+
+
+/* Agent profile photo */
+.avatar-photo{
+  display:block;
+  object-fit:cover;
+  object-position:center;
+  background:#fff;
+  border:1px solid rgba(255,255,255,.10);
+}
