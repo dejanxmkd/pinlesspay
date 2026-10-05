@@ -203,3 +203,9 @@ select.input{
     gap:24px;
   }
 }
+
+
+/* Dashboard recent tables: plain header state */
+.two-column-panels .mini-table th{
+  background:#fff;
+}
