@@ -16,7 +16,8 @@ window.addEventListener('DOMContentLoaded', () => {
     topbar.className = 'mobile-topbar mobile-app-header';
     topbar.innerHTML =
       '<button class="mobile-menu-button" type="button" aria-label="Open navigation" ' +
-      'aria-controls="mobile-navigation" aria-expanded="false"><i data-lucide="menu"></i></button>' +
+      'aria-controls="mobile-navigation" aria-expanded="false">' +
+      '<span class="mobile-burger-lines" aria-hidden="true"><span></span><span></span><span></span></span></button>' +
       '<a class="mobile-app-brand" href="dashboard.html" aria-label="Pinless Pay Home">' +
       '<img src="assets/img/logo.svg" alt="Pinless Pay"></a>' +
       '<span class="mobile-header-spacer" aria-hidden="true"></span>';
@@ -28,8 +29,21 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const heading = document.createElement('div');
     heading.className = 'mobile-drawer-heading';
-    heading.innerHTML = '<button type="button" class="mobile-drawer-close" aria-label="Close navigation">' +
-      '<i data-lucide="x"></i></button>';
+    // Mirror the first navigation link beside X; its original stays in the desktop menu.
+    const dashboardNavLink = sidebar.querySelector('.nav a[href="dashboard.html"]');
+    if (dashboardNavLink) {
+      const dashboardHeaderLink = dashboardNavLink.cloneNode(true);
+      dashboardHeaderLink.classList.add('mobile-dashboard-link');
+      dashboardHeaderLink.removeAttribute('data-nav');
+      if (dashboardHeaderLink.classList.contains('active')) dashboardHeaderLink.setAttribute('aria-current', 'page');
+      heading.appendChild(dashboardHeaderLink);
+    }
+    const menuClose = document.createElement('button');
+    menuClose.type = 'button';
+    menuClose.className = 'mobile-drawer-close';
+    menuClose.setAttribute('aria-label', 'Close navigation');
+    menuClose.innerHTML = '<i data-lucide="x"></i>';
+    heading.appendChild(menuClose);
     const brand = sidebar.querySelector('.brand');
     if (brand) brand.insertAdjacentElement('afterend', heading);
     else sidebar.prepend(heading);
