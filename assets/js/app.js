@@ -28,8 +28,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const heading = document.createElement('div');
     heading.className = 'mobile-drawer-heading';
-    heading.innerHTML = '<span>Navigation</span>' +
-      '<button type="button" class="mobile-drawer-close" aria-label="Close navigation">' +
+    heading.innerHTML = '<button type="button" class="mobile-drawer-close" aria-label="Close navigation">' +
       '<i data-lucide="x"></i></button>';
     const brand = sidebar.querySelector('.brand');
     if (brand) brand.insertAdjacentElement('afterend', heading);
