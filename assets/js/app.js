@@ -222,7 +222,16 @@ window.addEventListener('DOMContentLoaded', () => {
   const merchantTable = document.querySelector('[data-filter-table="merchants"]');
   let editingRow = null;
 
-  const merchantFields = ['dba','address','processor','mcc','phone','owner','cell','status'];
+
+  // Merchant column keys and their exact visible labels.
+  const merchantColumns = [
+    ['dba', 'Merchant DBA'], ['merchantId', 'Merchant ID'], ['address', 'Address'],
+    ['address2', 'Address 2'], ['city', 'City'], ['state', 'State'], ['zip', 'Zip'],
+    ['processor', 'Processor'], ['mcc', 'MCC'], ['owner', 'Owner'],
+    ['phone', 'DBA Phone'], ['iso', 'ISO'], ['agent', 'Agent'], ['rates', 'Rates'],
+    ['statusDate', 'Status Date'], ['status', 'Status']
+  ];
+  const merchantFields = merchantColumns.map(([name]) => name);
 
   const setDrawerMode = (mode, data = {}) => {
     if (!merchantDrawer || !merchantForm) return;
@@ -231,27 +240,19 @@ window.addEventListener('DOMContentLoaded', () => {
     merchantDrawer.querySelector('[data-drawer-subtitle]').textContent =
       mode === 'edit' ? 'Update merchant information.' : 'Create a new merchant record.';
     merchantDrawer.querySelector('[data-submit-label]').textContent = mode === 'edit' ? 'Save Changes' : 'Add Merchant';
-
+    merchantForm.classList.remove('show-errors');
     merchantFields.forEach(name => {
       const el = merchantForm.elements[name];
-      if (!el) return;
-      el.value = data[name] || (name === 'status' ? 'Active' : '');
+      if (el) el.value = data[name] ?? (name === 'status' ? 'Active' : '');
     });
   };
 
-  const rowData = row => ({
-    dba: row.dataset.dba || '',
-    address: row.dataset.address || '',
-    processor: row.dataset.processor || '',
-    mcc: row.dataset.mcc || '',
-    phone: row.dataset.phone || '',
-    owner: row.dataset.owner || '',
-    cell: row.dataset.cell || '',
-    status: row.dataset.status || 'Active'
-  });
+  const rowData = row => Object.fromEntries(merchantColumns.map(([name]) => [
+    name, row.dataset[name] || (name === 'status' ? 'Active' : '')
+  ]));
 
   const statusClass = value => {
-    const v = value.toLowerCase();
+    const v = (value || '').toLowerCase();
     if (v === 'active' || v === 'approved' || v === 'paid') return 'success';
     if (v === 'pending') return 'warning';
     if (v === 'in review') return 'purple';
@@ -284,24 +285,41 @@ window.addEventListener('DOMContentLoaded', () => {
   wireMerchantEditButtons(document);
 
   const buildMerchantRow = data => {
+    if (!merchantTable) return null;
     const tr = document.createElement('tr');
     tr.dataset.row = '1';
     tr.dataset.viewHref = 'merchant-details.html';
-    tr.innerHTML = `
-      <td><strong data-col="dba"></strong></td>
-      <td data-col="address"></td>
-      <td data-col="processor"></td>
-      <td data-col="mcc"></td>
-      <td data-col="phone"></td>
-      <td data-col="owner"></td>
-      <td data-col="created">Today</td>
-      <td><span class="badge" data-col="status"></span></td>
-      <td class="actions">
-        <div class="action-menu">
-          <button class="action-menu-trigger" type="button" aria-label="More actions"><i data-lucide="ellipsis"></i></button>
-          <div class="action-menu-panel"><a href="merchant-details.html">View Merchant</a><button type="button" data-edit-merchant>Edit Merchant</button></div>
-        </div>
-      </td>`;
+
+    merchantColumns.forEach(([key, label]) => {
+      const td = document.createElement('td');
+      td.dataset.label = label;
+      if (key === 'dba') {
+        const nameWrap = document.createElement('span');
+        nameWrap.className = 'merchant-name-wrap';
+        const name = document.createElement('strong');
+        name.dataset.col = 'dba';
+        const button = document.createElement('button');
+        button.className = 'merchant-inline-edit';
+        button.type = 'button';
+        button.dataset.editMerchant = '';
+        button.title = 'Edit Merchant';
+        button.setAttribute('aria-label', 'Edit merchant');
+        button.innerHTML = '<i data-lucide="pencil"></i>';
+        nameWrap.append(name, button);
+        td.appendChild(nameWrap);
+      } else if (key === 'status') {
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.dataset.col = 'status';
+        td.appendChild(badge);
+      } else {
+        const value = document.createElement('span');
+        value.dataset.col = key;
+        td.appendChild(value);
+      }
+      tr.appendChild(td);
+    });
+
     merchantTable.querySelector('tbody').prepend(tr);
     updateMerchantRow(tr, data);
     wireMerchantEditButtons(tr);
@@ -309,40 +327,28 @@ window.addEventListener('DOMContentLoaded', () => {
       if (e.target.closest('button,a,input,select,label,.action-menu')) return;
       window.location.href = tr.dataset.viewHref;
     });
-    const trigger = tr.querySelector('.action-menu-trigger');
-    trigger?.addEventListener('click', e => {
-      e.preventDefault();
-      e.stopPropagation();
-      const menu = trigger.closest('.action-menu');
-      document.querySelectorAll('.action-menu.open').forEach(other => {
-        if (other !== menu) other.classList.remove('open');
-      });
-      menu?.classList.toggle('open');
-    });
-    tr.querySelector('.action-menu-panel')?.addEventListener('click', e => e.stopPropagation());
-    decorateActionMenu(tr);
     refreshIcons();
     return tr;
   };
 
   function updateMerchantRow(row, data) {
-    Object.entries(data).forEach(([k,v]) => row.dataset[k] = v);
-    row.dataset.search = [data.dba,data.address,data.processor,data.mcc,data.phone,data.owner,data.cell,data.status].join(' ');
-    ['dba','address','processor','mcc','phone','owner'].forEach(k => {
-      const cell = row.querySelector('[data-col="' + k + '"]');
-      if (cell) cell.textContent = data[k] || '—';
+    merchantColumns.forEach(([name]) => {
+      row.dataset[name] = data[name] || '';
+      const col = row.querySelector('[data-col="' + name + '"]');
+      if (col) col.textContent = data[name] || '—';
     });
+    row.dataset.search = merchantFields.map(name => data[name] || '').join(' ');
+    const edit = row.querySelector('[data-edit-merchant]');
+    if (edit) edit.setAttribute('aria-label', 'Edit ' + (data.dba || 'merchant'));
     const badge = row.querySelector('[data-col="status"]');
-    if (badge) {
-      badge.textContent = data.status;
-      badge.className = 'badge ' + statusClass(data.status);
-    }
+    if (badge) badge.className = 'badge ' + statusClass(data.status);
   }
 
   merchantForm?.addEventListener('submit', e => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(merchantForm).entries());
-    if (!data.dba || !data.address || !data.processor || !data.mcc || !data.phone || !data.owner || !data.cell) {
+    const required = ['dba', 'address', 'city', 'state', 'zip', 'processor', 'mcc', 'owner', 'phone'];
+    if (required.some(key => !String(data[key] || '').trim())) {
       merchantForm.classList.add('show-errors');
       return;
     }
