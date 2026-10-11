@@ -38,12 +38,6 @@ window.addEventListener('DOMContentLoaded', () => {
       if (dashboardHeaderLink.classList.contains('active')) dashboardHeaderLink.setAttribute('aria-current', 'page');
       heading.appendChild(dashboardHeaderLink);
     }
-    const menuClose = document.createElement('button');
-    menuClose.type = 'button';
-    menuClose.className = 'mobile-drawer-close';
-    menuClose.setAttribute('aria-label', 'Close navigation');
-    menuClose.innerHTML = '<i data-lucide="x"></i>';
-    heading.appendChild(menuClose);
     const brand = sidebar.querySelector('.brand');
     if (brand) brand.insertAdjacentElement('afterend', heading);
     else sidebar.prepend(heading);
@@ -51,7 +45,6 @@ window.addEventListener('DOMContentLoaded', () => {
     sidebar.id = 'mobile-navigation';
     sidebar.setAttribute('aria-label', 'Site navigation');
     const trigger = topbar.querySelector('.mobile-menu-button');
-    const closeBtn = heading.querySelector('.mobile-drawer-close');
     const menuMedia = window.matchMedia('(max-width: 900px)');
     let lastNavFocus = null;
     const closeNav = (returnFocus = true) => {
@@ -70,7 +63,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.body.classList.add('mobile-nav-open');
       trigger.setAttribute('aria-expanded', 'true');
       trigger.setAttribute('aria-label', 'Close navigation');
-      closeBtn.focus({ preventScroll: true });
+      trigger.focus({ preventScroll: true });
     };
     const syncNav = () => {
       if (!menuMedia.matches) {
@@ -81,23 +74,38 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     };
     document.body.insertBefore(topbar, document.querySelector('.app'));
+    // The very same burger moves to the drawer's top-right corner and morphs to X.
+    // Keep it outside the fixed header stacking context so it stays clickable above the drawer.
+    const leftSpacer = document.createElement('span');
+    leftSpacer.className = 'mobile-header-spacer';
+    leftSpacer.setAttribute('aria-hidden', 'true');
+    topbar.insertBefore(leftSpacer, topbar.firstChild);
+    document.body.appendChild(trigger);
     document.body.appendChild(shade);
     trigger.addEventListener('click', () => {
       if (document.body.classList.contains('mobile-nav-open')) closeNav();
       else openNav();
     });
-    closeBtn.addEventListener('click', () => closeNav());
     shade.addEventListener('click', () => closeNav());
     sidebar.querySelectorAll('.nav a, .profile-menu-panel a').forEach(link =>
       link.addEventListener('click', () => closeNav(false)));
-    sidebar.addEventListener('keydown', e => {
-      if (e.key !== 'Tab' || !menuMedia.matches) return;
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Tab' || !menuMedia.matches ||
+          !document.body.classList.contains('mobile-nav-open')) return;
       const nodes = Array.from(sidebar.querySelectorAll('button, a[href]'))
         .filter(el => !el.disabled && el.getClientRects().length > 0);
       if (!nodes.length) return;
       const first = nodes[0], last = nodes[nodes.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      if (document.activeElement === trigger) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        trigger.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        trigger.focus();
+      }
     });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
     menuMedia.addEventListener('change', syncNav);
