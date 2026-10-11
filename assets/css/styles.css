@@ -795,7 +795,8 @@ body > .mobile-menu-button{display:none}
   }
   body > .mobile-menu-button .mobile-burger-lines span:nth-child(2){width:19px}
   body.mobile-nav-open > .mobile-menu-button{
-    transform:translate3d(calc(min(310px,86vw) - 76px),0,0);
+    /* Put X just outside the navy drawer, never beyond the phone viewport. */
+    transform:translate3d(min(calc(min(310px,86vw) - 8px), calc(100vw - 60px)),0,0);
   }
   body.mobile-nav-open > .mobile-menu-button .mobile-burger-lines span:first-child{
     transform:translateY(7.5px) rotate(45deg);
@@ -807,7 +808,24 @@ body > .mobile-menu-button{display:none}
     transform:translateY(-7.5px) rotate(-45deg);
   }
   body.mobile-nav-open .mobile-app-brand{visibility:hidden}
-  .mobile-drawer-heading .mobile-dashboard-link{width:100%;min-width:0}
+  .mobile-drawer-heading{
+    /* X lives outside now: Dashboard gets the full link width. */
+    padding-right:0;
+    width:100%;
+  }
+  .mobile-drawer-heading .mobile-dashboard-link{
+    width:100%;max-width:100%;min-width:0;flex:1 1 100%;
+  }
+  body > .mobile-menu-button,
+  body > .mobile-menu-button:focus,
+  body > .mobile-menu-button:focus-visible{
+    border:0!important;outline:0!important;box-shadow:none!important;
+    background:transparent!important;
+  }
+  /* Visible keyboard feedback without the outlined square. */
+  body > .mobile-menu-button:focus-visible .mobile-burger-lines span{
+    background:#68eebd;
+  }
 }
 @media(prefers-reduced-motion:reduce){
   body > .mobile-menu-button,
