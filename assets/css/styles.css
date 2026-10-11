@@ -551,7 +551,7 @@ select.input{
   .sidebar{
     display:flex!important;position:fixed;left:0;top:0;bottom:0;
     width:min(310px,86vw);max-width:86vw;
-    padding:calc(22px + env(safe-area-inset-top,0px)) 16px calc(18px + env(safe-area-inset-bottom,0px));
+    padding:calc(8px + env(safe-area-inset-top,0px)) 16px calc(18px + env(safe-area-inset-bottom,0px));
     background:var(--mobile-navy);color:#fff;z-index:340;
     transform:translateX(-105%);visibility:hidden;pointer-events:none;
     transition:transform .26s cubic-bezier(.2,.8,.2,1),visibility .26s ease;
@@ -564,9 +564,9 @@ select.input{
     transform:translateX(0);visibility:visible;pointer-events:auto;
   }
   .mobile-drawer-heading{
-    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    display:flex;align-items:center;
     height:49px;min-height:49px;margin:0 0 7px;
-    border:0;
+    padding-right:54px;gap:0;border:0;
   }
   .mobile-dashboard-link{
     display:flex;align-items:center;gap:12px;
@@ -769,3 +769,47 @@ select.input{
 /* Keep labels and Lucide icons white on active green navigation links. */
 .nav a.active{color:#fff}
 .nav a.active svg{color:#fff;stroke:#fff}
+
+
+/* Animated single burger -> X: travels right beside the Dashboard link. */
+body > .mobile-menu-button{display:none}
+@media(max-width:900px){
+  body > .mobile-menu-button{
+    display:grid;place-items:center;
+    position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:16px;
+    width:44px;height:44px;min-width:44px;min-height:44px;
+    padding:0;border:0;outline-offset:2px;
+    background:transparent;color:#33cc99;z-index:380;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transform:translate3d(0,0,0);
+    transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  }
+  body > .mobile-menu-button .mobile-burger-lines{
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;width:26px;height:26px;gap:5px;
+  }
+  body > .mobile-menu-button .mobile-burger-lines span{
+    display:block;flex:0 0 2.5px;width:25px;height:2.5px;
+    background:#33cc99;border-radius:99px;transform-origin:center;
+    transition:transform .26s ease,opacity .17s ease,width .26s ease;
+  }
+  body > .mobile-menu-button .mobile-burger-lines span:nth-child(2){width:19px}
+  body.mobile-nav-open > .mobile-menu-button{
+    transform:translate3d(calc(min(310px,86vw) - 76px),0,0);
+  }
+  body.mobile-nav-open > .mobile-menu-button .mobile-burger-lines span:first-child{
+    transform:translateY(7.5px) rotate(45deg);
+  }
+  body.mobile-nav-open > .mobile-menu-button .mobile-burger-lines span:nth-child(2){
+    transform:scaleX(0);opacity:0;
+  }
+  body.mobile-nav-open > .mobile-menu-button .mobile-burger-lines span:last-child{
+    transform:translateY(-7.5px) rotate(-45deg);
+  }
+  body.mobile-nav-open .mobile-app-brand{visibility:hidden}
+  .mobile-drawer-heading .mobile-dashboard-link{width:100%;min-width:0}
+}
+@media(prefers-reduced-motion:reduce){
+  body > .mobile-menu-button,
+  body > .mobile-menu-button .mobile-burger-lines span{transition:none!important}
+}
