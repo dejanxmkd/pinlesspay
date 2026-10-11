@@ -7,6 +7,39 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const refreshIcons = () => { if (window.lucide) lucide.createIcons(); };
 
+
+  // Responsive navigation shared by all agent portal pages.
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar) {
+    sidebar.id = 'mobile-navigation';
+    const topbar = document.createElement('div');
+    topbar.className = 'mobile-topbar';
+    const section = document.querySelector('.page-header h1')?.textContent || 'Agent Portal';
+    topbar.innerHTML = '<button class="mobile-menu-button" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><i data-lucide="menu"></i></button><img src="assets/img/logo-dark.svg" alt="Pinless Pay"><span class="mobile-topbar-title"></span>';
+    topbar.querySelector('.mobile-topbar-title').textContent = section;
+    const backdrop = document.createElement('button');
+    backdrop.className = 'mobile-nav-backdrop';
+    backdrop.type = 'button';
+    backdrop.setAttribute('aria-label', 'Close navigation');
+    document.body.insertBefore(topbar, document.querySelector('.app'));
+    document.body.appendChild(backdrop);
+    const toggle = topbar.querySelector('.mobile-menu-button');
+    const closeNav = () => {
+      document.body.classList.remove('mobile-nav-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Open navigation');
+    };
+    toggle.addEventListener('click', () => {
+      const opened = document.body.classList.toggle('mobile-nav-open');
+      toggle.setAttribute('aria-expanded', String(opened));
+      toggle.setAttribute('aria-label', opened ? 'Close navigation' : 'Open navigation');
+    });
+    backdrop.addEventListener('click', closeNav);
+    sidebar.querySelectorAll('.nav a').forEach(link => link.addEventListener('click', closeNav));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+    refreshIcons();
+  }
+
   // ---------- Sidebar profile dropdown ----------
   document.querySelectorAll('.logout').forEach(logout => {
     const menu = document.createElement('div');
@@ -141,6 +174,15 @@ window.addEventListener('DOMContentLoaded', () => {
       selects.forEach(sel => sel.value = '');
       apply();
     });
+    // Processors-page deep links select the corresponding merchant filter.
+    if (key === 'merchants') {
+      const requestedProcessor = new URLSearchParams(location.search).get('processor');
+      const processorSelect = selects.find(sel => sel.dataset.field === 'processor');
+      if (requestedProcessor && processorSelect &&
+          Array.from(processorSelect.options).some(option => option.value === requestedProcessor)) {
+        processorSelect.value = requestedProcessor;
+      }
+    }
     apply();
   });
 
@@ -354,4 +396,90 @@ window.addEventListener('DOMContentLoaded', () => {
     const banner = document.querySelector('.success-banner');
     if (banner) banner.style.display = 'flex';
   }));
+
+  // CSV import is a client-side preview only: no server writes.
+  const importInput = document.querySelector('[data-import-file]');
+  if (importInput) {
+    const expected = ['Merchant DBA', 'Processor', 'Transactions', 'Volume', 'Avg Ticket',
+                      'Income', 'House %', 'Agent %', 'Agent Residual', 'Pinless Pay Total'];
+    const feedback = document.querySelector('[data-import-feedback]');
+    const preview = document.querySelector('[data-import-preview]');
+    const rowsTarget = document.querySelector('[data-import-rows]');
+    const filename = document.querySelector('[data-import-filename]');
+    const previewCount = document.querySelector('[data-import-count]');
+
+    const parseCsv = text => {
+      const records = [];
+      let row = [], cell = '', quoted = false;
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char === '"') {
+          if (quoted && text[i + 1] === '"') { cell += '"'; i++; }
+          else quoted = !quoted;
+        } else if (char === ',' && !quoted) {
+          row.push(cell); cell = '';
+        } else if ((char === '\n' || char === '\r') && !quoted) {
+          if (char === '\r' && text[i + 1] === '\n') i++;
+          row.push(cell); cell = '';
+          if (row.some(value => value.trim() !== '')) records.push(row);
+          row = [];
+        } else {
+          cell += char;
+        }
+      }
+      if (quoted) throw new Error('CSV has an unclosed quoted value.');
+      row.push(cell);
+      if (row.some(value => value.trim() !== '')) records.push(row);
+      return records;
+    };
+
+    importInput.addEventListener('change', async () => {
+      const file = importInput.files?.[0];
+      preview.hidden = true;
+      rowsTarget.replaceChildren();
+      feedback.textContent = '';
+      feedback.className = 'import-feedback';
+      filename.textContent = file ? file.name : 'No file selected';
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith('.csv') || file.size > 5 * 1024 * 1024) {
+        feedback.textContent = 'Choose a CSV file smaller than 5 MB.';
+        feedback.classList.add('error');
+        return;
+      }
+      try {
+        const parsed = parseCsv((await file.text()).replace(/^\uFEFF/, ''));
+        if (!parsed.length || parsed[0].length !== expected.length ||
+            !expected.every((col, i) => parsed[0][i].trim() === col)) {
+          throw new Error('CSV columns must match the Residuals table headers in exactly the same order.');
+        }
+        const data = parsed.slice(1);
+        if (!data.length) throw new Error('The CSV file has no data rows.');
+        if (data.some(row => row.length !== expected.length)) {
+          throw new Error('Every row must have exactly 10 columns.');
+        }
+        data.slice(0, 50).forEach(values => {
+          const tr = document.createElement('tr');
+          values.forEach((value, i) => {
+            const td = document.createElement('td');
+            td.dataset.label = expected[i];
+            td.textContent = value.trim() || '—';
+            if ([3, 4, 5, 8, 9].includes(i)) td.classList.add('money');
+            if (i === 8) td.classList.add('agent-amount');
+            if (i === 9) td.classList.add('pay-total');
+            tr.appendChild(td);
+          });
+          rowsTarget.appendChild(tr);
+        });
+        previewCount.textContent = 'Showing ' + Math.min(data.length, 50) + ' of ' + data.length + ' rows';
+        preview.hidden = false;
+        feedback.textContent = 'CSV validated. ' + data.length + ' record' + (data.length === 1 ? '' : 's') + ' ready to preview.';
+        feedback.classList.add('success');
+      } catch (error) {
+        feedback.textContent = error.message || 'Unable to read the selected CSV file.';
+        feedback.classList.add('error');
+      }
+    });
+  }
+
 });
