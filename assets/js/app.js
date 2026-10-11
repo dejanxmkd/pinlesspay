@@ -8,114 +8,97 @@ window.addEventListener('DOMContentLoaded', () => {
   const refreshIcons = () => { if (window.lucide) lucide.createIcons(); };
 
 
-  // Mobile app shell: one brand header, four persistent tabs and a More bottom sheet.
-  // Desktop navigation remains the original left sidebar.
+  // Native-like mobile burger navigation. Reuse the existing eight sidebar routes.
+  // Only the top header shows the logo; the mobile menu displays navigation links.
   const sidebar = document.querySelector('.sidebar');
   if (sidebar) {
-    const currentPage = location.pathname.split('/').pop() || 'dashboard.html';
-    const primaryTabs = [
-      { href: 'dashboard.html', label: 'Home', icon: 'house', pages: ['dashboard.html'] },
-      { href: 'merchants.html', label: 'Merchants', icon: 'store', pages: ['merchants.html', 'merchant-details.html'] },
-      { href: 'applications.html', label: 'Applications', icon: 'file-text', pages: ['applications.html', 'application-details.html'] },
-      { href: 'residuals.html', label: 'Residuals', icon: 'wallet-cards', pages: ['residuals.html'] }
-    ];
-    const secondaryTabs = [
-      { href: 'import.html', label: 'Import', icon: 'upload' },
-      { href: 'processors.html', label: 'Processors', icon: 'layers-3' },
-      { href: 'iso.html', label: 'ISO', icon: 'network' },
-      { href: 'agents.html', label: 'Agents', icon: 'users-round' }
-    ];
-    const currentIsMore = secondaryTabs.some(item => item.href === currentPage);
-    const activePrimary = primaryTabs.find(item => item.pages.includes(currentPage));
-    const tabLink = item => '<a class="mobile-app-tab' +
-      (item === activePrimary ? ' is-active' : '') + '" href="' + item.href +
-      '"' + (item === activePrimary ? ' aria-current="page"' : '') +
-      '><i data-lucide="' + item.icon + '"></i><span>' + item.label + '</span></a>';
-
     const topbar = document.createElement('header');
     topbar.className = 'mobile-topbar mobile-app-header';
-    topbar.innerHTML = '<a class="mobile-app-brand" href="dashboard.html" aria-label="Pinless Pay Home">' +
+    topbar.innerHTML =
+      '<button class="mobile-menu-button" type="button" aria-label="Open navigation" ' +
+      'aria-controls="mobile-navigation" aria-expanded="false"><i data-lucide="menu"></i></button>' +
+      '<a class="mobile-app-brand" href="dashboard.html" aria-label="Pinless Pay Home">' +
       '<img src="assets/img/logo.svg" alt="Pinless Pay"></a>' +
-      '<span class="mobile-app-caption">AGENT PORTAL</span>';
+      '<span class="mobile-header-spacer" aria-hidden="true"></span>';
 
-    const bottomNav = document.createElement('nav');
-    bottomNav.className = 'mobile-app-navigation';
-    bottomNav.setAttribute('aria-label', 'Main mobile navigation');
-    bottomNav.innerHTML = primaryTabs.map(tabLink).join('') +
-      '<button type="button" class="mobile-app-tab mobile-more-button' +
-      (currentIsMore ? ' is-active' : '') +
-      '" aria-controls="mobile-more-sheet" aria-expanded="false" aria-label="More sections">' +
-      '<i data-lucide="grid-2x2"></i><span>More</span></button>';
+    const shade = document.createElement('button');
+    shade.type = 'button';
+    shade.className = 'mobile-nav-backdrop';
+    shade.setAttribute('aria-label', 'Close navigation');
 
-    const backdrop = document.createElement('button');
-    backdrop.type = 'button';
-    backdrop.className = 'mobile-more-backdrop';
-    backdrop.setAttribute('aria-label', 'Close menu');
+    const heading = document.createElement('div');
+    heading.className = 'mobile-drawer-heading';
+    heading.innerHTML = '<span>Navigation</span>' +
+      '<button type="button" class="mobile-drawer-close" aria-label="Close navigation">' +
+      '<i data-lucide="x"></i></button>';
+    const brand = sidebar.querySelector('.brand');
+    if (brand) brand.insertAdjacentElement('afterend', heading);
+    else sidebar.prepend(heading);
 
-    const sheet = document.createElement('section');
-    sheet.className = 'mobile-more-sheet';
-    sheet.id = 'mobile-more-sheet';
-    sheet.setAttribute('role', 'dialog');
-    sheet.setAttribute('aria-modal', 'true');
-    sheet.setAttribute('aria-labelledby', 'mobile-more-title');
-    sheet.setAttribute('aria-hidden', 'true');
-    sheet.innerHTML = '<div class="mobile-more-grip" aria-hidden="true"><span></span></div>' +
-      '<div class="mobile-more-heading"><div><h2 id="mobile-more-title">More</h2>' +
-      '<p>Explore all sections</p></div>' +
-      '<button type="button" class="mobile-more-close" aria-label="Close menu"><i data-lucide="x"></i></button></div>' +
-      '<div class="mobile-more-links">' +
-      secondaryTabs.map(item => '<a href="' + item.href + '" class="mobile-more-link' +
-        (currentPage === item.href ? ' is-current' : '') + '"' +
-        (currentPage === item.href ? ' aria-current="page"' : '') + '>' +
-        '<span class="mobile-more-icon"><i data-lucide="' + item.icon + '"></i></span>' +
-        '<span>' + item.label + '</span><i class="mobile-more-chevron" data-lucide="chevron-right"></i></a>').join('') +
-      '</div><a class="mobile-more-logout" href="login.html"><i data-lucide="log-out"></i>Log out</a>';
-
+    sidebar.id = 'mobile-navigation';
+    sidebar.setAttribute('aria-label', 'Site navigation');
+    const trigger = topbar.querySelector('.mobile-menu-button');
+    const closeBtn = heading.querySelector('.mobile-drawer-close');
+    const menuMedia = window.matchMedia('(max-width: 900px)');
+    let lastNavFocus = null;
+    const closeNav = (returnFocus = true) => {
+      const wasOpen = document.body.classList.contains('mobile-nav-open');
+      document.body.classList.remove('mobile-nav-open');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.setAttribute('aria-label', 'Open navigation');
+      if (menuMedia.matches) sidebar.inert = true;
+      if (wasOpen && returnFocus && lastNavFocus && document.contains(lastNavFocus)) {
+        lastNavFocus.focus({ preventScroll: true });
+      }
+    };
+    const openNav = () => {
+      lastNavFocus = document.activeElement;
+      sidebar.inert = false;
+      document.body.classList.add('mobile-nav-open');
+      trigger.setAttribute('aria-expanded', 'true');
+      trigger.setAttribute('aria-label', 'Close navigation');
+      closeBtn.focus({ preventScroll: true });
+    };
+    const syncNav = () => {
+      if (!menuMedia.matches) {
+        closeNav(false);
+        sidebar.inert = false;
+      } else if (!document.body.classList.contains('mobile-nav-open')) {
+        sidebar.inert = true;
+      }
+    };
     document.body.insertBefore(topbar, document.querySelector('.app'));
-    document.body.append(bottomNav, backdrop, sheet);
-    const moreButton = bottomNav.querySelector('.mobile-more-button');
-    const closeButton = sheet.querySelector('.mobile-more-close');
-    let lastMenuFocus = null;
-    const closeMore = () => {
-      if (!document.body.classList.contains('mobile-more-open')) return;
-      document.body.classList.remove('mobile-more-open');
-      moreButton.setAttribute('aria-expanded', 'false');
-      sheet.setAttribute('aria-hidden', 'true');
-      sheet.inert = true;
-      if (lastMenuFocus && document.contains(lastMenuFocus)) lastMenuFocus.focus({ preventScroll: true });
-    };
-    const openMore = () => {
-      lastMenuFocus = document.activeElement;
-      sheet.inert = false;
-      document.body.classList.add('mobile-more-open');
-      moreButton.setAttribute('aria-expanded', 'true');
-      sheet.setAttribute('aria-hidden', 'false');
-      closeButton.focus({ preventScroll: true });
-    };
-    sheet.inert = true;
-    moreButton.addEventListener('click', () => {
-      if (document.body.classList.contains('mobile-more-open')) closeMore();
-      else openMore();
+    document.body.appendChild(shade);
+    trigger.addEventListener('click', () => {
+      if (document.body.classList.contains('mobile-nav-open')) closeNav();
+      else openNav();
     });
-    backdrop.addEventListener('click', closeMore);
-    closeButton.addEventListener('click', closeMore);
-    sheet.addEventListener('keydown', e => {
-      if (e.key !== 'Tab') return;
-      const focusable = Array.from(sheet.querySelectorAll('button, a[href]')).filter(el => !el.disabled);
-      const first = focusable[0], last = focusable[focusable.length - 1];
+    closeBtn.addEventListener('click', () => closeNav());
+    shade.addEventListener('click', () => closeNav());
+    sidebar.querySelectorAll('.nav a, .profile-menu-panel a').forEach(link =>
+      link.addEventListener('click', () => closeNav(false)));
+    sidebar.addEventListener('keydown', e => {
+      if (e.key !== 'Tab' || !menuMedia.matches) return;
+      const nodes = Array.from(sidebar.querySelectorAll('button, a[href]'))
+        .filter(el => !el.disabled && el.getClientRects().length > 0);
+      if (!nodes.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMore(); });
-    const grip = sheet.querySelector('.mobile-more-grip');
-    let startY = null;
-    grip.addEventListener('touchstart', e => {
-      startY = e.touches[0]?.clientY ?? null;
-    }, { passive: true });
-    grip.addEventListener('touchend', e => {
-      if (startY !== null && e.changedTouches[0]?.clientY - startY > 55) closeMore();
-      startY = null;
-    }, { passive: true });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+    menuMedia.addEventListener('change', syncNav);
+    syncNav();
+
+    // The section links remain the same across desktop and mobile.
+    const page = location.pathname.split('/').pop();
+    const activeTarget = page === 'merchant-details.html' ? 'merchants.html'
+      : page === 'application-details.html' ? 'applications.html' : page;
+    if (activeTarget && activeTarget !== page) {
+      sidebar.querySelectorAll('[data-nav]').forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === activeTarget);
+      });
+    }
     refreshIcons();
   }
 
