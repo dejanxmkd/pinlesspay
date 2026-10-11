@@ -269,21 +269,77 @@ window.addEventListener('DOMContentLoaded', () => {
   const overlay = document.querySelector('.drawer-overlay');
   const drawers = Array.from(document.querySelectorAll('.drawer'));
 
+  let lastDrawerFocus = null;
   const closeDrawers = () => {
-    drawers.forEach(d => d.classList.remove('open'));
+    const wasOpen = drawers.some(d => d.classList.contains('open'));
+    drawers.forEach(d => {
+      d.classList.remove('open');
+      d.setAttribute('aria-hidden', 'true');
+      d.inert = true;
+    });
     overlay?.classList.remove('open');
     document.body.classList.remove('drawer-open');
+    if (wasOpen && lastDrawerFocus && document.contains(lastDrawerFocus)) {
+      lastDrawerFocus.focus({ preventScroll: true });
+    }
   };
 
   const openDrawer = id => {
     const drawer = document.getElementById(id);
     if (!drawer) return;
-    drawers.forEach(d => d.classList.remove('open'));
+    lastDrawerFocus = document.activeElement;
+    drawers.forEach(d => {
+      d.classList.remove('open');
+      d.setAttribute('aria-hidden', 'true');
+      d.inert = true;
+    });
+    drawer.inert = false;
+    drawer.setAttribute('aria-hidden', 'false');
     drawer.classList.add('open');
     overlay?.classList.add('open');
     document.body.classList.add('drawer-open');
-    setTimeout(() => drawer.querySelector('input,select,button')?.focus(), 120);
+    // Avoid triggering the mobile keyboard as soon as a sheet opens.
+    setTimeout(() => {
+      if (!drawer.classList.contains('open')) return;
+      if (window.matchMedia('(max-width: 900px)').matches) {
+        drawer.querySelector('[data-close-drawer]')?.focus({ preventScroll: true });
+      } else {
+        drawer.querySelector('input,select,button')?.focus({ preventScroll: true });
+      }
+    }, 130);
   };
+
+  drawers.forEach(drawer => {
+    drawer.setAttribute('role', 'dialog');
+    drawer.setAttribute('aria-modal', 'true');
+    drawer.setAttribute('aria-hidden', 'true');
+    drawer.inert = true;
+    const heading = drawer.querySelector('[data-drawer-title]');
+    if (heading) {
+      heading.id = heading.id || (drawer.id + '-title');
+      drawer.setAttribute('aria-labelledby', heading.id);
+    }
+    const header = drawer.querySelector('.drawer-header');
+    if (!header) return;
+    let touchStartY = null;
+    header.addEventListener('touchstart', e => {
+      touchStartY = e.touches[0]?.clientY ?? null;
+    }, { passive: true });
+    header.addEventListener('touchend', e => {
+      if (touchStartY !== null && e.changedTouches[0]?.clientY - touchStartY > 85 &&
+          window.matchMedia('(max-width: 900px)').matches) closeDrawers();
+      touchStartY = null;
+    }, { passive: true });
+    drawer.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(drawer.querySelectorAll('button, input, select, textarea, a[href]'))
+        .filter(el => !el.disabled && el.getClientRects().length > 0);
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+  });
 
   document.querySelectorAll('[data-open-drawer]').forEach(btn => {
     btn.addEventListener('click', e => {
