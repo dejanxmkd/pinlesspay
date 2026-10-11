@@ -696,9 +696,9 @@ select.input{
   }
   .drawer .field select{padding-right:40px}
   .drawer .field input[type=date]{
-    -webkit-appearance:none;appearance:none;
     max-width:100%;min-width:0;
     line-height:normal;
+    color-scheme:light;
   }
   .drawer .field input[type=date]::-webkit-date-and-time-value{
     text-align:left;min-height:1em;
