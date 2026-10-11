@@ -555,10 +555,9 @@ select.input{
     transform:translateX(0);visibility:visible;pointer-events:auto;
   }
   .mobile-drawer-heading{
-    display:flex;align-items:center;justify-content:space-between;gap:14px;
-    height:57px;margin:0 4px 16px;
-    border-bottom:1px solid rgba(255,255,255,.12);
-    font-size:18px;line-height:1.3;font-weight:700;color:#fff;
+    display:flex;align-items:center;justify-content:flex-end;
+    height:42px;min-height:42px;margin:0 4px 6px;
+    border-bottom:0;
   }
   .mobile-drawer-close{
     flex:0 0 38px;width:38px;height:38px;display:grid;place-items:center;
@@ -573,7 +572,8 @@ select.input{
     color:#e1e7f2;font-weight:600;
   }
   .sidebar .nav svg{width:21px;height:21px;flex-shrink:0}
-  .sidebar .nav a.active{background:#33cc99;color:#17283a}
+  .sidebar .nav a.active{background:#33cc99;color:#fff}
+  .sidebar .nav a.active svg{color:#fff;stroke:#fff}
   .sidebar-bottom{padding:19px 8px 5px}
   .sidebar .user-meta strong{font-size:14px}
   .sidebar .user-meta span{font-size:12px}
@@ -742,3 +742,7 @@ select.input{
 @media(prefers-reduced-motion:reduce){
   .sidebar,.mobile-nav-backdrop,.drawer{transition:none!important}
 }
+
+/* Keep labels and Lucide icons white on active green navigation links. */
+.nav a.active{color:#fff}
+.nav a.active svg{color:#fff;stroke:#fff}
