@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function render() {
     rows.replaceChildren();
+    window.PinlessRowActions.refresh();
     count.textContent = records.length + ' ' + (records.length === 1 ? kind : kind === 'ISO' ? 'ISOs' : 'Agents');
     if (!records.length) {
       const tr = document.createElement('tr');
