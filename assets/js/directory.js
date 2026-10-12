@@ -75,14 +75,19 @@ document.addEventListener('DOMContentLoaded', () => {
         tr.appendChild(td);
       });
       const actions = document.createElement('td');
-      actions.className = 'directory-actions';
-      const button = document.createElement('button');
-      button.className = 'directory-edit';
-      button.type = 'button';
-      button.textContent = 'Edit';
-      button.setAttribute('aria-label', 'Edit ' + (record.name || kind));
-      button.addEventListener('click', () => open(record.id));
-      actions.appendChild(button);
+      actions.className = 'directory-actions row-action-cell';
+      actions.setAttribute('data-label', 'Actions');
+      window.PinlessRowActions.attach(actions, {
+        row: tr, name: record.name || kind,
+        onEdit: () => open(record.id),
+        onDelete: () => {
+          if (!window.confirm('Delete "' + (record.name || kind) + '"? This change only lasts until reload.')) return;
+          records = records.filter(item => item.id !== record.id);
+          render();
+          message.textContent = kind + ' deleted from this preview. Records reset on reload.';
+          message.hidden = false;
+        }
+      });
       tr.appendChild(actions);
       rows.appendChild(tr);
     });
