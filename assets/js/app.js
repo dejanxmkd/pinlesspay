@@ -399,16 +399,28 @@ window.addEventListener('DOMContentLoaded', () => {
     return 'neutral';
   };
 
-  const wireMerchantEditButtons = scope => {
-    scope.querySelectorAll('[data-edit-merchant]').forEach(btn => {
-      if (btn.dataset.bound) return;
-      btn.dataset.bound = '1';
-      btn.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        editingRow = btn.closest('tr');
-        setDrawerMode('edit', rowData(editingRow));
-        openDrawer('merchant-drawer');
+  // Every editable merchant row uses the same sticky Gmail-style overflow menu.
+  const wireMerchantActions = scope => {
+    const sourceRows = scope.matches?.('tr[data-row]') ? [scope] :
+      Array.from(scope.querySelectorAll('[data-filter-table="merchants"] tbody tr[data-row]'));
+    sourceRows.forEach(row => {
+      const cell = row.querySelector('td.row-action-cell');
+      if (!cell) return;
+      window.PinlessRowActions.attach(cell, {
+        row, name: row.dataset.dba || 'Merchant',
+        onEdit: () => {
+          editingRow = row;
+          setDrawerMode('edit', rowData(row));
+          openDrawer('merchant-drawer');
+        },
+        onDelete: () => {
+          const name = row.dataset.dba || 'this merchant';
+          if (!window.confirm('Delete "' + name + '"? This preview change resets on reload.')) return;
+          row.remove();
+          const search = document.querySelector('[data-search="merchants"]');
+          search?.dispatchEvent(new Event('input'));
+          showToast('Merchant deleted from this preview');
+        }
       });
     });
   };
@@ -421,7 +433,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  wireMerchantEditButtons(document);
+  wireMerchantActions(document);
 
   const buildMerchantRow = data => {
     if (!merchantTable) return null;
@@ -437,14 +449,7 @@ window.addEventListener('DOMContentLoaded', () => {
         nameWrap.className = 'merchant-name-wrap';
         const name = document.createElement('strong');
         name.dataset.col = 'dba';
-        const button = document.createElement('button');
-        button.className = 'merchant-inline-edit';
-        button.type = 'button';
-        button.dataset.editMerchant = '';
-        button.title = 'Edit Merchant';
-        button.setAttribute('aria-label', 'Edit merchant');
-        button.innerHTML = '<i data-lucide="pencil"></i>';
-        nameWrap.append(name, button);
+        nameWrap.appendChild(name);
         td.appendChild(nameWrap);
       } else if (key === 'status') {
         const badge = document.createElement('span');
@@ -458,10 +463,14 @@ window.addEventListener('DOMContentLoaded', () => {
       }
       tr.appendChild(td);
     });
+    const actionsCell = document.createElement('td');
+    actionsCell.className = 'row-action-cell';
+    actionsCell.setAttribute('data-label', 'Actions');
+    tr.appendChild(actionsCell);
 
     merchantTable.querySelector('tbody').prepend(tr);
     updateMerchantRow(tr, data);
-    wireMerchantEditButtons(tr);
+    wireMerchantActions(tr);
     tr.addEventListener('click', e => {
       if (e.target.closest('button,a,input,select,label,.action-menu')) return;
       window.location.href = tr.dataset.viewHref;
@@ -477,8 +486,6 @@ window.addEventListener('DOMContentLoaded', () => {
       if (col) col.textContent = data[name] || '—';
     });
     row.dataset.search = merchantFields.map(name => data[name] || '').join(' ');
-    const edit = row.querySelector('[data-edit-merchant]');
-    if (edit) edit.setAttribute('aria-label', 'Edit ' + (data.dba || 'merchant'));
     const badge = row.querySelector('[data-col="status"]');
     if (badge) badge.className = 'badge ' + statusClass(data.status);
   }
