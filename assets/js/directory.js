@@ -74,11 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (index === 0) td.classList.add('directory-name');
         tr.appendChild(td);
       });
-      const actions = document.createElement('td');
-      actions.className = 'directory-actions row-action-cell';
-      actions.setAttribute('data-label', 'Actions');
-      window.PinlessRowActions.attach(actions, {
-        row: tr, name: record.name || kind,
+      window.PinlessRowActions.attach(tr, {
+        name: record.name || kind,
         onEdit: () => open(record.id),
         onDelete: () => {
           if (!window.confirm('Delete "' + (record.name || kind) + '"? This change only lasts until reload.')) return;
@@ -88,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
           message.hidden = false;
         }
       });
-      tr.appendChild(actions);
       rows.appendChild(tr);
     });
   }
