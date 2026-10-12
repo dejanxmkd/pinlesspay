@@ -8,10 +8,6 @@
 .directory-table th{height:47px;font-size:11px;letter-spacing:.015em}
 .directory-table td{vertical-align:middle}
 .directory-table .directory-name{font-weight:700}
-.directory-table td:last-child,.directory-table th:last-child{position:sticky;right:0;z-index:1;background:#fff;box-shadow:-7px 0 14px rgba(32,33,54,.035)}
-.directory-table th:last-child{background:#fbfbfd}
-.directory-edit{border:1px solid var(--border);border-radius:7px;padding:8px 12px;background:#fff;color:var(--text);font:700 12px 'DM Sans',sans-serif;cursor:pointer}
-.directory-edit:hover{border-color:var(--green);color:#1a9973}
 .directory-empty-cell{text-align:center!important;height:220px!important;padding:60px 20px!important;color:var(--muted)}
 .directory-empty-cell strong{display:block;font-size:16px;color:var(--text);margin-bottom:6px}
 .directory-empty-cell p{margin:0;font-size:13px}
