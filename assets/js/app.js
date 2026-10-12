@@ -415,6 +415,7 @@ window.addEventListener('DOMContentLoaded', () => {
           const name = row.dataset.dba || 'this merchant';
           if (!window.confirm('Delete "' + name + '"? This preview change resets on reload.')) return;
           row.remove();
+          window.PinlessRowActions.refresh();
           const search = document.querySelector('[data-search="merchants"]');
           search?.dispatchEvent(new Event('input'));
           showToast('Merchant deleted from this preview');
