@@ -1,10 +1,37 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#202136"><title>ISO · Pinless Pay Agent</title><link rel="stylesheet" href="assets/css/styles.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#202136"><title>ISO · Pinless Pay Agent</title><link rel="stylesheet" href="assets/css/styles.css"><link rel="stylesheet" href="assets/css/directory.css?v=1"></head>
 <body><div class="app">
 <aside class="sidebar"><div class="brand"><img src="assets/img/logo.svg" alt="Pinless Pay" style="width:164px"></div><nav class="nav"><a data-nav href="dashboard.html"><i data-lucide="layout-dashboard"></i>Dashboard</a><a data-nav href="merchants.html"><i data-lucide="store"></i>Merchants</a><a data-nav href="applications.html"><i data-lucide="file-text"></i>Applications</a><a data-nav href="residuals.html"><i data-lucide="wallet-cards"></i>Residuals</a><a data-nav href="import.html"><i data-lucide="upload"></i>Import</a><a data-nav href="processors.html"><i data-lucide="layers-3"></i>Processors</a><a data-nav href="iso.html"><i data-lucide="network"></i>ISO</a><a data-nav href="agents.html"><i data-lucide="users-round"></i>Agents</a></nav><div class="sidebar-bottom"><div class="user-card"><img class="avatar avatar-photo" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael Carter"><div class="user-meta"><strong>Michael Carter</strong><span>Agent</span></div><a class="logout" href="login.html" title="Log out"><i data-lucide="log-out"></i></a></div></div></aside>
-<main class="main">
-<header class="page-header"><div><h1>ISO</h1><p>View your ISO partners.</p></div></header>
-<section class="card directory-empty"><span class="directory-empty-icon"><i data-lucide="network"></i></span><h2>No ISO records yet</h2><p>ISO information will appear here when records are available.</p></section>
-</main></div>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script><script src="assets/js/app.js"></script></body></html>
+<main class="main directory-main" data-directory-kind="iso">
+<header class="page-header"><div><h1>ISOs</h1><p>View and manage your ISO partners.</p></div><div class="header-actions"><button class="btn btn-primary" type="button" data-directory-add>Add ISO</button></div></header>
+<p class="directory-message" role="status" aria-live="polite" data-directory-message hidden></p>
+<section class="card directory-card" aria-label="ISOs directory">
+<div class="directory-count" data-directory-count>0 ISOs</div>
+<div class="directory-table-scroll" role="region" aria-label="ISOs table" tabindex="0">
+<table class="table directory-table"><thead><tr><th scope="col">ISO Name</th><th scope="col">Address</th><th scope="col">Address 2</th><th scope="col">City</th><th scope="col">State</th><th scope="col">Zip</th><th scope="col">Owner Name</th><th scope="col">Phone</th><th scope="col">Email</th><th scope="col">Commission</th><th scope="col">Actions</th></tr></thead><tbody data-directory-rows><tr><td colspan="11" class="directory-empty-cell">No ISO records yet</td></tr></tbody></table>
+</div></section>
+<p class="directory-preview-note">Preview only: entries are kept for this page session and reset when the page is reloaded.</p>
+</main></div><dialog class="directory-dialog" data-directory-dialog aria-labelledby="iso-dialog-title">
+<form class="directory-dialog-form" data-directory-form>
+<div class="directory-dialog-top"><div><h2 id="iso-dialog-title" data-directory-heading>Add ISO</h2><p>Enter ISO contact and commission details.</p></div><button type="button" class="directory-dialog-close" aria-label="Close form" data-directory-close><i data-lucide="x"></i></button></div>
+<div class="directory-dialog-content">
+<div class="directory-fields"><div class="directory-field is-wide"><label for="iso-name">ISO Name</label><input id="iso-name" name="name" type="text" placeholder="e.g. Northeast Partners" required></div>
+<div class="directory-field is-wide"><label for="iso-address">Address</label><input id="iso-address" name="address" type="text" placeholder="Street address" required></div>
+<div class="directory-field is-wide"><label for="iso-address2">Address 2 <span class="optional">(optional)</span></label><input id="iso-address2" name="address2" type="text" placeholder="Suite, unit, etc."></div>
+<div class="directory-field"><label for="iso-city">City</label><input id="iso-city" name="city" type="text" placeholder="City" required></div>
+<div class="directory-field"><label for="iso-state">State</label><input id="iso-state" name="state" type="text" placeholder="State" required></div>
+<div class="directory-field"><label for="iso-zip">Zip</label><input id="iso-zip" name="zip" type="text" placeholder="ZIP code" required autocomplete="postal-code"></div>
+<div class="directory-field is-wide"><label for="iso-owner">Owner Name</label><input id="iso-owner" name="owner" type="text" placeholder="Full name" required></div>
+<div class="directory-field"><label for="iso-phone">Phone</label><input id="iso-phone" name="phone" type="tel" placeholder="Phone number" required></div>
+<div class="directory-field"><label for="iso-email">Email</label><input id="iso-email" name="email" type="email" placeholder="email@company.com" required autocomplete="email"></div>
+<div class="directory-field"><label for="iso-commission">Commission <span class="optional">(optional)</span></label><input id="iso-commission" name="commission" type="text" placeholder="e.g. 15%"></div></div>
+<h3 class="directory-group-title">Banking Details</h3>
+<p class="directory-group-description">These fields are included in the form but not shown in the table. Banking information is not stored or submitted in this frontend preview.</p>
+<div class="directory-fields"><div class="directory-field is-wide"><label for="iso-bankName">Bank Name</label><input id="iso-bankName" name="bankName" type="text" inputmode="text" autocomplete="off" placeholder="Bank name" required></div>
+<div class="directory-field"><label for="iso-routingNumber">Routing Number</label><input id="iso-routingNumber" name="routingNumber" type="text" inputmode="numeric" autocomplete="off" placeholder="Routing number" required></div>
+<div class="directory-field"><label for="iso-accountNumber">Account Number</label><input id="iso-accountNumber" name="accountNumber" type="password" inputmode="text" autocomplete="off" placeholder="Account number" required></div></div>
+</div>
+<div class="directory-dialog-footer"><button class="btn btn-secondary" type="button" data-directory-close>Cancel</button><button class="btn btn-primary" type="submit" data-directory-submit>Add ISO</button></div>
+</form></dialog>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script><script src="assets/js/app.js"></script><script src="assets/js/directory.js?v=1"></script></body></html>
