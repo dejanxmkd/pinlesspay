@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const heading = dialog.querySelector('[data-directory-heading]');
   const submit = dialog.querySelector('[data-directory-submit]');
   const message = root.querySelector('[data-directory-message]');
-  const close = dialog.querySelector('[data-directory-close]');
+  const closeButtons = dialog.querySelectorAll('[data-directory-close]');
   let records = [];
   let editingId = null;
   let returnFocus = null;
@@ -82,7 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Banking credentials are intentionally never stored or repopulated.
     for (const name of ['bankName', 'routingNumber', 'accountNumber']) {
       const input = form.elements.namedItem(name);
-      if (input) input.value = '';
+      if (input) {
+        input.value = '';
+        input.required = !record;
+      }
     }
     heading.textContent = (record ? 'Edit ' : 'Add ') + kind;
     submit.textContent = record ? 'Save Changes' : 'Add ' + kind;
@@ -93,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   add.addEventListener('click', () => open());
-  close.addEventListener('click', () => dialog.close());
+  closeButtons.forEach(button => button.addEventListener('click', () => dialog.close()));
   dialog.addEventListener('click', event => {
     if (event.target === dialog) dialog.close();
   });
@@ -115,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     render();
     dialog.close();
-    message.textContent = kind + ' updated in this preview. Banking details were not stored. Records reset on reload.';
+    message.textContent = kind + (editingId ? ' updated' : ' added') + ' in this preview. Banking details were not stored. Records reset on reload.';
     message.hidden = false;
     if (window.lucide) window.lucide.createIcons();
   });
