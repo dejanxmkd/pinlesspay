@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!records.length) {
       const tr = document.createElement('tr');
       const td = document.createElement('td');
-      td.colSpan = fields.length + 1;
+      td.colSpan = fields.length;
       td.className = 'directory-empty-cell';
       const strong = document.createElement('strong');
       strong.textContent = 'No ' + (kind === 'ISO' ? 'ISO' : 'agent') + ' records yet';
@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (index === 0) td.classList.add('directory-name');
         tr.appendChild(td);
       });
+      rows.appendChild(tr);
       window.PinlessRowActions.attach(tr, {
         name: record.name || kind,
         onEdit: () => open(record.id),
@@ -85,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
           message.hidden = false;
         }
       });
-      rows.appendChild(tr);
     });
   }
 
