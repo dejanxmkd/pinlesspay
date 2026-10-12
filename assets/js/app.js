@@ -404,10 +404,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const sourceRows = scope.matches?.('tr[data-row]') ? [scope] :
       Array.from(scope.querySelectorAll('[data-filter-table="merchants"] tbody tr[data-row]'));
     sourceRows.forEach(row => {
-      const cell = row.querySelector('td.row-action-cell');
-      if (!cell) return;
-      window.PinlessRowActions.attach(cell, {
-        row, name: row.dataset.dba || 'Merchant',
+      window.PinlessRowActions.attach(row, {
+        name: row.dataset.dba || 'Merchant',
         onEdit: () => {
           editingRow = row;
           setDrawerMode('edit', rowData(row));
@@ -463,11 +461,6 @@ window.addEventListener('DOMContentLoaded', () => {
       }
       tr.appendChild(td);
     });
-    const actionsCell = document.createElement('td');
-    actionsCell.className = 'row-action-cell';
-    actionsCell.setAttribute('data-label', 'Actions');
-    tr.appendChild(actionsCell);
-
     merchantTable.querySelector('tbody').prepend(tr);
     updateMerchantRow(tr, data);
     wireMerchantActions(tr);
