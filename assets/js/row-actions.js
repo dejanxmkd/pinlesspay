@@ -187,6 +187,8 @@
     }
   });
   document.addEventListener('scroll',refresh,true);
+  document.addEventListener('input',refresh);
+  document.addEventListener('change',refresh);
   window.addEventListener('resize',refresh);
   window.PinlessRowActions = {attach,close,refresh};
 })();
